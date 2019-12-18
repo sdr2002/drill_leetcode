@@ -1,6 +1,6 @@
 import ipdb
 
-db = ipdb.set_trace
+dbg = ipdb.set_trace
 
 #Definition for a binary tree node.
 class TreeNode(object):
@@ -10,8 +10,16 @@ class TreeNode(object):
         self.right = None
 
     def list_to_tree_breadth(self,x_list):
-        #db()
         parents = [self]
+        # Test if length of x_list is valid: len(x_list) must be 2**N-1
+        if len(x_list)==0:
+            pass
+        else:
+            two_power = len(x_list)+1
+            while(two_power>1):                
+                assert (two_power%2 == 0), "x_list has invalid length"
+                two_power //= 2
+
         # [1 || 2,3 || None,7,5,2 || None,None,1,None,None,1,2,3]
         while not(all([p is None for p in parents])) and not(len(x_list)==0):
             nd = parents.pop(0)
@@ -63,7 +71,7 @@ class TreeNode(object):
 
             if ind == 2**depth - 1:
                 print('||\n')
-                #db()
+                #dbg()
                 depth += 1
                 ind = 0
             else:
@@ -127,14 +135,151 @@ class TreeNode(object):
             is_bal, depth = compare(root)
             return is_bal
 
+    def delete_node(self, root, key):
+        """
+        :type root: TreeNode
+        :type key: int
+        :rtype: TreeNode
+        """
+        
+        def find_node_to_delete(parent_of_node,node,key):
+            if node is None:
+                return parent_of_node, None
+            else:
+                if node.val > key:
+                    if node.left is None:
+                        return parent_of_node, None
+                    else:
+                        return find_node_to_delete(node,node.left,key)
+                elif node.val < key:
+                    if node.right is None:
+                        return parent_of_node, None
+                    else:
+                        return find_node_to_delete(node,node.right,key)
+                else:
+                    return parent_of_node,node
+        
+        parent_of_head, head = find_node_to_delete(root,root,key)
+        dbg()
+        if (head is None):
+            return root            
+        else:           
+            lnd = head.left
+            rnd = head.right
+
+            if (lnd is None) and (rnd is None):
+                if parent_of_head == head:
+                    return None
+                else:
+                    new_node = self.insert_node(lnd,rnd)
+                    if not(parent_of_head.left is None) and (parent_of_head.left.val == head.val):
+                        parent_of_head.left = new_node
+                    elif not(parent_of_head.right is None) and (parent_of_head.right.val == head.val):
+                        parent_of_head.right = new_node
+                    else:
+                        raise Exception("child val should exist! 2")                        
+                    return root
+            else:
+                new_node = self.insert_node(lnd,rnd)
+                if parent_of_head == head:
+                    return new_node
+                else:                
+                    if not(parent_of_head.left is None) and (parent_of_head.left.val == head.val):
+                        parent_of_head.left = new_node
+                    elif not(parent_of_head.right is None) and (parent_of_head.right.val == head.val):
+                        parent_of_head.right = new_node
+                    else:
+                        raise Exception("child val should exist! 2")
+                    return root
+        
+                
+    def insert_node(self, root, new_nd):
+        """
+        :type root: TreeNode
+        :type new_nd: TreeNode
+        :rtype: TreeNode
+        """
+        def search(node,new_nd):
+            if node is None:
+                return new_nd
+            elif new_nd is None:
+                return node
+            else:
+                if node.val > new_nd.val:
+                    if node.left is None:
+                        node.left = new_nd
+                        return None
+                    else:
+                        _ = search(node.left,new_nd)
+                elif node.val < new_nd.val:
+                    if node.right is None:
+                        node.right = new_nd
+                        return None
+                    else:
+                        _ = search(node.right,new_nd)                    
+                        return None
+                else:
+                    return None # will change if node contains items except value
+        new_root = search(root,new_nd)
+        if new_root is None:
+            return root
+        else:
+            return new_root
+        
+    
+    def insert_node_by_val(self, root, val):
+        return self.insert_node(root,TreeNode(val))
+
+def test_delete_node():
+    print("Test tree deletion~~~~~~~~~~~~~~~~~~~~~~")
+    tree = TreeNode()
+    tree.list_to_tree_breadth([0])
+    #dbg()
+    new_tree = tree.delete_node(tree,0)
+    assert new_tree is None, "Not None!"
+    #dbg()
+    
+    tree = TreeNode()
+    tree.list_to_tree_breadth([1])
+    #dbg()
+    new_tree = tree.delete_node(tree,0)
+    new_tree.print_tree()
+    #dbg()
+
+    tree = TreeNode()
+    tree.list_to_tree_breadth([1,None,2])
+    tree.print_tree()
+    dbg()
+    new_tree = tree.delete_node(tree,1)
+    new_tree.print_tree()
+    dbg()
+
+    tree = TreeNode()
+    tree.list_to_tree_breadth([1,None,2])
+    tree.print_tree()
+    dbg()
+    new_tree = tree.delete_node(tree,2)
+    new_tree.print_tree()
+    dbg()    
+
+    tree = TreeNode()
+    tree.list_to_tree_breadth([2,1,None])
+    tree.print_tree()
+    dbg()
+    new_tree = tree.delete_node(tree,2)
+    new_tree.print_tree()
+    dbg()
+
+    return True
 if __name__ == "__main__":
-    print("\n\n~~~~Tree gen list by depth~~~~")    
+    """
+    print("\n\n~~~~Tree gen list by depth~~~~")
     tree = TreeNode()
     tree.list_to_tree_breadth([2\
                                 ,1,33\
                                 ,None,None,25,40\
                                 ,None,None,None,None,11,None,34,None\
-                                ,None,None,None,None,None,None,None,None,7,12,None,None,None,36,None,None,None,None])
+                                ,None,None,None,None,None,None,None,None,7,12,None,None,None,36,None,None])
     tree.print_tree()
     print(TreeNode.tree_to_list_inorder(tree))
     
@@ -160,4 +305,51 @@ if __name__ == "__main__":
     tree.print_tree()
     print("Balance: %r"%TreeNode.is_tree_balanced(tree))
 
+    print("\n\n~~~~Tree delete~~~~")
+    tree = TreeNode()
+    tree.list_to_tree_breadth([5,3,6,2,4,None,7])
+    #dbg()
+    new_tree = tree.delete_node(tree,3)
+    new_tree.print_tree()
+    #dbg()
+    """
 
+    tree = TreeNode()
+    tree.list_to_tree_breadth([0])
+    #dbg()
+    new_tree = tree.delete_node(tree,0)
+    assert new_tree is None, "Not None!"
+    #dbg()
+    
+    tree = TreeNode()
+    tree.list_to_tree_breadth([1])
+    #dbg()
+    new_tree = tree.delete_node(tree,0)
+    new_tree.print_tree()
+    #dbg()
+
+    tree = TreeNode()
+    tree.list_to_tree_breadth([1,None,2])
+    tree.print_tree()
+    dbg()
+    new_tree = tree.delete_node(tree,1)
+    new_tree.print_tree()
+    dbg()
+
+    tree = TreeNode()
+    tree.list_to_tree_breadth([1,None,2])
+    tree.print_tree()
+    dbg()
+    new_tree = tree.delete_node(tree,2)
+    new_tree.print_tree()
+    dbg()    
+
+    tree = TreeNode()
+    tree.list_to_tree_breadth([2,1,None])
+    tree.print_tree()
+    dbg()
+    new_tree = tree.delete_node(tree,2)
+    new_tree.print_tree()
+    dbg()
+
+    test_delete_node()
