@@ -160,7 +160,7 @@ class TreeNode(object):
                     return parent_of_node,node
         
         parent_of_head, head = find_node_to_delete(root,root,key)
-        dbg()
+        #dbg()
         if (head is None):
             return root            
         else:           
@@ -229,6 +229,44 @@ class TreeNode(object):
     
     def insert_node_by_val(self, root, val):
         return self.insert_node(root,TreeNode(val))
+
+    def isValidBST(self, root):
+        """
+        https://leetcode.com/problems/validate-binary-search-tree
+        :type root: TreeNode
+        :rtype: bool
+        """
+        
+        if root is None:
+            return True
+        
+        def isValid(node,smallest=None,biggest=None):
+            if node is None:
+                return True
+            else:
+                if not(smallest is None) and (node.val <= smallest):
+                    return False
+                elif not(biggest is None) and (node.val >= biggest):
+                    return False
+                else:                    
+                    left_smallest = smallest
+                    left_biggest  = node.val if (biggest is None) else min(node.val,biggest)
+                    
+                    right_smallest = node.val if (smallest is None) else max(node.val,smallest)
+                    right_biggest  = biggest                                            
+                        
+                    if not(isValid(node.left,left_smallest,left_biggest)):
+                        return False
+                    elif not(isValid(node.right,right_smallest,right_biggest)):
+                        return False
+                    else:
+                        return True
+                
+        #dbg()
+        left_valid = isValid(root.left,None,root.val)
+        right_valid = isValid(root.right,root.val,None)
+        
+        return left_valid and right_valid
 
 def test_delete_node():
     print("Test tree deletion~~~~~~~~~~~~~~~~~~~~~~")
